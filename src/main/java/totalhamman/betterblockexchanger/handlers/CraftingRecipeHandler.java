@@ -13,16 +13,6 @@ import totalhamman.betterblockexchanger.items.ModItems;
 public class CraftingRecipeHandler {
     public static void init() {
 
-//        addShapedRecipe(new ItemStack(ModItems.flightRing),
-//                "NGN", "G G", " G ",
-//                'G', "ingotGold",
-//                'N', new ItemStack(Items.nether_star));
-//
-//        addShapelessRecipe(new ItemStack(ModBlocks.bedrockSand),
-//                Blocks.sand, ModItems.bedrockShard);
-//
-//        addSmeltingRecipe(ModBlocks.bedrockSand, new ItemStack(ModBlocks.bedrockGlass), 0.1F);
-
         addShapedRecipe(new ItemStack(ModItems.Exchanger),
                 "  E", " S ", "R  ",
                 'E', new ItemStack(Items.ENDER_EYE),
