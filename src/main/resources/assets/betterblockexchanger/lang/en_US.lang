@@ -1,0 +1,7 @@
+item.exchanger.name=Exchanger
+item.bedrock_shard.name=Bedrock Shard
+item.bedrock_chisel.name=Bedrock Chisel
+
+tile.blockname.name=Name
+
+itemGroup.BetterBlockExchanger=BetterBlockExchanger

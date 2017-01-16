@@ -1,0 +1,6 @@
+{
+	"parent": "betterblockexchanger:item/_standard_item",
+	"textures": { 
+		"layer0": "betterblockexchanger:items/bedrock_shard"
+	}
+}

@@ -1,0 +1,16 @@
+[
+{
+  "modid": "betterblockexchanger",
+  "name": "BetterBlockExchanger",
+  "description": "Creating a Better Vanillay Block Exchanger for 1.10.2",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["TotalHamman"],
+  "credits": "Forge, FML",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
