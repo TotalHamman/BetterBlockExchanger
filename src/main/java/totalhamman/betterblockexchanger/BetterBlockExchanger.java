@@ -34,7 +34,7 @@ public class BetterBlockExchanger {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent e) {
-        if (debugOn) BetterBlockExchanger.log.info("RUnning Init");
+        if (debugOn) BetterBlockExchanger.log.info("Running Init");
         proxy.init(e);
     }
 
