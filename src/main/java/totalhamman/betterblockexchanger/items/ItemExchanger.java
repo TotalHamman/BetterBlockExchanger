@@ -11,7 +11,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import totalhamman.betterblockexchanger.BetterBlockExchanger;
 import totalhamman.betterblockexchanger.handlers.BlockExchangeHandler;
-import totalhamman.betterblockexchanger.handlers.PlayerMessageHandler;
 
 import static totalhamman.betterblockexchanger.BetterBlockExchanger.debugOn;
 
