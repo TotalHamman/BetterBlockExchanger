@@ -2,32 +2,19 @@ package totalhamman.betterblockexchanger.items;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11;
 import totalhamman.betterblockexchanger.BetterBlockExchanger;
 import totalhamman.betterblockexchanger.handlers.BlockExchangeHandler;
 
-import static totalhamman.betterblockexchanger.BetterBlockExchanger.debugOn;
+import static totalhamman.betterblockexchanger.utils.LogHelper.LogHelper;
 
 public class ItemExchanger extends ItemMod {
 
@@ -42,32 +29,47 @@ public class ItemExchanger extends ItemMod {
         GameRegistry.register(this);
     }
 
-    public EnumActionResult onItemUseFirst(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         if (world.isRemote) {
             return EnumActionResult.PASS;
         }
 
-        player.swingArm(hand);
+        LogHelper("-------------------------------------------------------------------");
+
         IBlockState prevState = world.getBlockState(pos);
+        Block block = prevState.getBlock();
+        int meta = block.getMetaFromState(prevState);
 
         if (player.isSneaking()) {
-            String blockName = Block.REGISTRY.getNameForObject(prevState.getBlock()).toString();
 
             if (BlockExchangeHandler.BlockSuitableForSelection(stack, player, world, pos)) {
-                player.addChatMessage(new TextComponentString("Selected Block - " + blockName));
+                LogHelper("Sneaking | Block Selected - " + BlockExchangeHandler.getBlockName(block, meta));
+
+                player.addChatMessage(new TextComponentString("Selected Block - " + BlockExchangeHandler.getBlockName(block, meta)));
                 BlockExchangeHandler.SetSelectedBlock(stack, player, world, pos, facing);
+                player.swingArm(hand);
+
+                return EnumActionResult.SUCCESS;
             } else {
-                player.addChatMessage(new TextComponentString("Invalid Selected Block - " + blockName));
+                player.addChatMessage(new TextComponentString("Invalid Selected Block - " + BlockExchangeHandler.getBlockName(block, meta)));
                 return EnumActionResult.FAIL;
             }
         } else {
+            LogHelper("Not Sneaking | Block to exchange - " + BlockExchangeHandler.getBlockName(block, meta));
+
             if (BlockExchangeHandler.BlockSuitableForExchange(stack, player, world, pos)) {
-                BlockExchangeHandler.ExchangeBlocks(stack, player, world, pos, facing);
+                LogHelper("Block " + BlockExchangeHandler.getBlockName(block, meta) + " is suitable for exchange");
+                if (BlockExchangeHandler.ExchangeBlocks(stack, player, world, pos, facing)) {
+                    stack.damageItem(1, player);
+                    player.swingArm(hand);
+
+                    return EnumActionResult.SUCCESS;
+                }
             } else {
                 return EnumActionResult.FAIL;
             }
         }
 
-        return EnumActionResult.SUCCESS;
+        return EnumActionResult.PASS;
     }
 }
