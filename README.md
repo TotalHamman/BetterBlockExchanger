@@ -1,7 +1,7 @@
 #BetterBlockExchanger
 
 ##Introduction
-This is my first attempt to complete / publish a Minecraft mod.  THis mod is intended to fill the BlockExchanger gap currently in 1.10.2 by providing a single Vanilla-Esque Block Exchanger. 
+This is my first attempt to complete / publish a Minecraft mod.  This mod is intended to fill the BlockExchanger gap currently in 1.10.2 by providing a single Vanilla-Esque Block Exchanger. 
 
 Constructive criticism is welcomed, but please do not stoop to insults.
 
