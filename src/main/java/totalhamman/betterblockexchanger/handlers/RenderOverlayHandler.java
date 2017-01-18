@@ -7,29 +7,36 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import totalhamman.betterblockexchanger.items.ItemExchanger;
+import static totalhamman.betterblockexchanger.utils.LogHelper.LogHelper;
 
 import java.util.List;
 
 public class RenderOverlayHandler {
 
+    @SideOnly(Side.CLIENT)
     @SubscribeEvent
     public void RenderWorldLastEvent(RenderWorldLastEvent event) {
 
         EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
         World world = player.getEntityWorld();
         ItemStack stack = player.getHeldItemMainhand();
-        ItemStack offStack = player.getHeldItemOffhand();
         Minecraft mc = Minecraft.getMinecraft();
         float partialTicks = event.getPartialTicks();
 
-        if (stack != null && stack.getItem() instanceof ItemExchanger) {
-            List<BlockPos> blocks = BlockExchangeHandler.GetBlocksToExchange(stack, mc.objectMouseOver.getBlockPos(), world, mc.objectMouseOver.sideHit);
+        RayTraceResult mouseOver = mc.objectMouseOver;
+
+        if (stack != null && stack.getItem() instanceof ItemExchanger && (mouseOver != null) && mouseOver.getBlockPos() != null && mouseOver.sideHit != null) {
+            List<BlockPos> blocks = BlockExchangeHandler.GetBlocksToExchange(stack, mouseOver.getBlockPos(), world, mc.objectMouseOver.sideHit);
 
             Tessellator tessellator = Tessellator.getInstance();
             VertexBuffer buffer = tessellator.getBuffer();
@@ -93,6 +100,7 @@ public class RenderOverlayHandler {
             GlStateManager.enableTexture2D();
             GlStateManager.disableBlend();
         }
+
 
     }
 
