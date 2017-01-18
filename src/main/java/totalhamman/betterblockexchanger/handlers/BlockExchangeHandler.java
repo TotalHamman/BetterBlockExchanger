@@ -40,7 +40,7 @@ public class BlockExchangeHandler {
 
         for (Object o : Block.REGISTRY) {
             Block block = (Block) o;
-            if (block instanceof BlockRedstoneLight || block instanceof BlockWorkbench) {
+            if (block instanceof BlockRedstoneLight || block instanceof BlockWorkbench || block instanceof BlockEndPortal) {
                 blacklistedBlocks.add(block);
             }
         }
@@ -77,7 +77,6 @@ public class BlockExchangeHandler {
         if (blacklistedBlocks.contains(worldIn.getBlockState(pos).getBlock())) return false;
         if (softBlocks.contains(worldIn.getBlockState(pos).getBlock())) return false;
         if (creativeBlocks.contains(worldIn.getBlockState(pos).getBlock())) return false;
-        //if (!ItemExchanger.isCreative(stack) && ItemExchanger.creativeOverrideBlocks.contains(block)) return false;
 
         return true;
     }
@@ -118,8 +117,6 @@ public class BlockExchangeHandler {
 
         BuildExchangeList(world, pos, pos, state, side, range, exchangeList, checkedList);
 
-        //LogHelper("| " + exchangeList.toString() + " |");
-
         return exchangeList;
     }
 
@@ -143,8 +140,6 @@ public class BlockExchangeHandler {
         Block newBlock = Block.REGISTRY.getObject(new ResourceLocation(ItemNBTHelper.getString(stack, "BlockName", "")));
         IBlockState newState = newBlock.getStateFromMeta(ItemNBTHelper.getByte(stack, "BlockData", (byte) 0));
         int meta = ItemNBTHelper.getByte(stack, "BlockData", (byte) 0);
-
-        //LogHelper("Selected name - " + newBlock.toString() + " | Selected meta - " + newState.toString());
 
         List<BlockPos> toExchange = GetBlocksToExchange(stack, pos, world, facing);
 

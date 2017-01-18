@@ -7,7 +7,6 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -17,7 +16,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import totalhamman.betterblockexchanger.items.ItemExchanger;
-import static totalhamman.betterblockexchanger.utils.LogHelper.LogHelper;
 
 import java.util.List;
 
@@ -35,7 +33,7 @@ public class RenderOverlayHandler {
 
         RayTraceResult mouseOver = mc.objectMouseOver;
 
-        if (stack != null && stack.getItem() instanceof ItemExchanger && (mouseOver != null) && mouseOver.getBlockPos() != null && mouseOver.sideHit != null) {
+        if (stack != null && stack.getItem() instanceof ItemExchanger && mouseOver != null && mouseOver.getBlockPos() != null && mouseOver.sideHit != null) {
             List<BlockPos> blocks = BlockExchangeHandler.GetBlocksToExchange(stack, mouseOver.getBlockPos(), world, mc.objectMouseOver.sideHit);
 
             Tessellator tessellator = Tessellator.getInstance();
