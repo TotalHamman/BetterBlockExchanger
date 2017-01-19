@@ -22,3 +22,4 @@ eclipse
 run
 src/main/resources/assets/betterblockexchanger/models/block/_makeb.bat
 src/main/resources/assets/betterblockexchanger/models/item/_makei.bat
+libs/
