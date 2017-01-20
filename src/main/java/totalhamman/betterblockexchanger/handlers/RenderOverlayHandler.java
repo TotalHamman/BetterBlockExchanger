@@ -34,7 +34,7 @@ public class RenderOverlayHandler {
         RayTraceResult mouseOver = mc.objectMouseOver;
 
         if (stack != null && stack.getItem() instanceof ItemExchanger && mouseOver != null && mouseOver.getBlockPos() != null && mouseOver.sideHit != null) {
-            List<BlockPos> blocks = BlockExchangeHandler.GetBlocksToExchange(stack, mouseOver.getBlockPos(), world, mc.objectMouseOver.sideHit);
+            List<BlockPos> blocks = BlockExchangeHandler.getBlocksToExchange(stack, mouseOver.getBlockPos(), world, mc.objectMouseOver.sideHit);
 
             Tessellator tessellator = Tessellator.getInstance();
             VertexBuffer buffer = tessellator.getBuffer();
@@ -98,7 +98,6 @@ public class RenderOverlayHandler {
             GlStateManager.enableTexture2D();
             GlStateManager.disableBlend();
         }
-
 
     }
 

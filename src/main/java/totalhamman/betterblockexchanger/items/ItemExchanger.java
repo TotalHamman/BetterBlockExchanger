@@ -13,10 +13,22 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import totalhamman.betterblockexchanger.BetterBlockExchanger;
 import totalhamman.betterblockexchanger.handlers.BlockExchangeHandler;
+import totalhamman.betterblockexchanger.utils.ItemNBTHelper;
+import totalhamman.betterblockexchanger.utils.LogHelper;
 
-import static totalhamman.betterblockexchanger.utils.LogHelper.LogHelper;
+import static totalhamman.betterblockexchanger.utils.LogHelper.logHelper;
 
 public class ItemExchanger extends ItemMod {
+
+    public static final int SQMODE_INITIAL = 0;
+    public static final int SQMODE_1X1 = 0;
+    public static final int SQMODE_3X3 = 1;
+    public static final int SQMODE_5X5 = 2;
+    public static final int SQMODE_7X7 = 3;
+    public static final int SQMODE_FINAL = SQMODE_INITIAL;
+
+    public static final String[] sqModeList = new String[] {"1x1", "3x3", "5x5", "7x7"};
+
 
     public ItemExchanger() {
         super();
@@ -29,12 +41,31 @@ public class ItemExchanger extends ItemMod {
         GameRegistry.register(this);
     }
 
+    public void switchMode(EntityPlayer player, ItemStack stack) {
+        int sqMode = getSQMode(stack);
+
+        logHelper("Original SQMode Value - " + sqMode);
+
+        sqMode++;
+        if (sqMode > SQMODE_7X7) sqMode = SQMODE_INITIAL;
+
+        logHelper("Original SQMode Value - " + sqMode);
+
+        player.addChatMessage(new TextComponentString("Mode set to " + sqModeList[sqMode]));
+        ItemNBTHelper.getCompound(stack).setInteger("SQMode", sqMode);
+    }
+
+    private int getSQMode(ItemStack stack) {
+        return ItemNBTHelper.getCompound(stack).getInteger("SQMode");
+        //return ItemNBTHelper.getInteger(stack, "SqMode", 0);
+    }
+
     public EnumActionResult onItemUse(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         if (world.isRemote) {
             return EnumActionResult.PASS;
         }
 
-        LogHelper("-------------------------------------------------------------------");
+        logHelper("-------------------------------------------------------------------");
 
         IBlockState prevState = world.getBlockState(pos);
         Block block = prevState.getBlock();
@@ -42,11 +73,11 @@ public class ItemExchanger extends ItemMod {
 
         if (player.isSneaking()) {
 
-            if (BlockExchangeHandler.BlockSuitableForSelection(stack, player, world, pos)) {
-                LogHelper("Sneaking | Block Selected - " + BlockExchangeHandler.getBlockName(block, meta));
+            if (BlockExchangeHandler.blockSuitableForSelection(stack, player, world, pos)) {
+                logHelper("Sneaking | Block Selected - " + BlockExchangeHandler.getBlockName(block, meta));
 
                 player.addChatMessage(new TextComponentString("Selected Block - " + BlockExchangeHandler.getBlockName(block, meta)));
-                BlockExchangeHandler.SetSelectedBlock(stack, player, world, pos, facing);
+                BlockExchangeHandler.setSelectedBlock(stack, player, world, pos, facing);
                 player.swingArm(hand);
 
                 return EnumActionResult.SUCCESS;
@@ -55,11 +86,11 @@ public class ItemExchanger extends ItemMod {
                 return EnumActionResult.FAIL;
             }
         } else {
-            LogHelper("Not Sneaking | Block to exchange - " + BlockExchangeHandler.getBlockName(block, meta));
+            logHelper("Not Sneaking | Block to exchange - " + BlockExchangeHandler.getBlockName(block, meta));
 
-            if (BlockExchangeHandler.BlockSuitableForExchange(stack, player, world, pos)) {
-                LogHelper("Block " + BlockExchangeHandler.getBlockName(block, meta) + " is suitable for exchange");
-                if (BlockExchangeHandler.ExchangeBlocks(stack, player, world, pos, facing)) {
+            if (BlockExchangeHandler.blockSuitableForExchange(stack, player, world, pos)) {
+                logHelper("Block " + BlockExchangeHandler.getBlockName(block, meta) + " is suitable for exchange");
+                if (BlockExchangeHandler.exchangeBlocks(stack, player, world, pos, facing)) {
                     stack.damageItem(1, player);
                     player.swingArm(hand);
 

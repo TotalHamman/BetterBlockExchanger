@@ -1,9 +1,9 @@
 item.exchanger.name=Exchanger
 item.bedrock_shard.name=Bedrock Shard
 item.bedrock_chisel.name=Bedrock Chisel
+itemGroup.BetterBlockExchanger=BetterBlockExchanger
 
-tile.blockname.name=Name
+key.sqmodifier=Exchange Size
+key.categories.betterblockexchanger=Better Block Exchanger
 
 description.betterblockexchanger.bedrockshard=Something about the name lends itself to trying the unthinkable, using a certain chisel on an unbreakable block.
-
-itemGroup.BetterBlockExchanger=BetterBlockExchanger
