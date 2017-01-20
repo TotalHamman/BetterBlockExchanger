@@ -30,6 +30,13 @@ public class BlockExchangeHandler {
     private static final Set<Block> blacklistedBlocks = new HashSet<Block>();
     private static final Set<Block> creativeBlocks = new HashSet<Block>();
 
+    /*** Facings for the 4 faces around X Axis */
+    private static EnumFacing[] FACES_AROUND_X = new EnumFacing[1];
+    /*** Facings for the 4 faces around Y Axis */
+    private static EnumFacing[] FACES_AROUND_Y = new EnumFacing[1];
+    /*** Facings for the 4 faces around Z Axis */
+    private static EnumFacing[] FACES_AROUND_Z = new EnumFacing[1];
+
     public static void initSpecialBlockLists() {
         for (Object o : Block.REGISTRY) {
             Block block = (Block) o;
@@ -40,14 +47,14 @@ public class BlockExchangeHandler {
 
         for (Object o : Block.REGISTRY) {
             Block block = (Block) o;
-            if (block instanceof BlockRedstoneLight || block instanceof BlockWorkbench || block instanceof BlockEndPortal) {
+            if (block instanceof BlockRedstoneLight || block instanceof BlockWorkbench) {
                 blacklistedBlocks.add(block);
             }
         }
 
         for (Object o : Block.REGISTRY) {
             Block block = (Block) o;
-            if (block == Blocks.BEDROCK) {
+            if (block == Blocks.BEDROCK || block == Blocks.END_PORTAL_FRAME) {
                 creativeBlocks.add(block);
             }
         }
@@ -69,6 +76,28 @@ public class BlockExchangeHandler {
         logHelper(softBlocks.toString());
 
         logHelper("End Special Blocklists Init");
+    }
+
+    public static void initFacings() {
+        List<EnumFacing> x = new ArrayList<EnumFacing>();
+        List<EnumFacing> y = new ArrayList<EnumFacing>();
+        List<EnumFacing> z = new ArrayList<EnumFacing>();
+
+        for (EnumFacing facing : EnumFacing.VALUES){
+            if (facing.getAxis() != EnumFacing.Axis.X){
+                x.add(facing);
+            }
+            if (facing.getAxis() != EnumFacing.Axis.Y){
+                y.add(facing);
+            }
+            if (facing.getAxis() != EnumFacing.Axis.Z){
+                z.add(facing);
+            }
+        }
+
+        FACES_AROUND_X = x.toArray(new EnumFacing[1]);
+        FACES_AROUND_Y = y.toArray(new EnumFacing[1]);
+        FACES_AROUND_Z = z.toArray(new EnumFacing[1]);
     }
 
     public static boolean blockSuitableForSelection(ItemStack stack, EntityPlayer player, World world, BlockPos pos) {
@@ -101,8 +130,6 @@ public class BlockExchangeHandler {
             return false;
         }
 
-        //TODO - Complete Exchange Unsuitable Logic
-
         return true;
     }
 
@@ -116,13 +143,47 @@ public class BlockExchangeHandler {
         exchangeList.add(pos);
         checkedList.add(pos);
 
-        //buildExchangeList(world, pos, pos, state, side, range, exchangeList, checkedList);
+        buildExchangeList(world, pos, pos, state, side, range, exchangeList, checkedList);
 
         return exchangeList;
     }
 
-    private static void buildExchangeList(World world, BlockPos pos, BlockPos origin, IBlockState originalState, EnumFacing side, int range, List<BlockPos> exchangeList, List<BlockPos> checkedList) {
+    private static void buildExchangeList(World world, BlockPos pos, BlockPos origin, IBlockState origState, EnumFacing side, int range, List<BlockPos> exchangeList, List<BlockPos> checkedList) {
+        EnumFacing[] facesAround = new EnumFacing[1];
 
+        if (side.getAxis() == EnumFacing.Axis.X) {
+            facesAround = FACES_AROUND_X;
+        } else if (side.getAxis() == EnumFacing.Axis.Y) {
+            facesAround = FACES_AROUND_Y;
+        } else {
+            facesAround = FACES_AROUND_Z;
+        }
+
+        for (EnumFacing dir : facesAround){
+            BlockPos newPos = pos.offset(dir);
+
+            if (checkedList.contains(newPos) || !blockInRange(origin, newPos, range)){
+                continue;
+            }
+
+            checkedList.add(newPos);
+            IBlockState state = world.getBlockState(newPos);
+
+            boolean isAir = world.isAirBlock(newPos);
+            boolean isAirAdj = world.isAirBlock(newPos.offset(side));
+            boolean isWaterAdj = world.getBlockState(newPos.offset(side)) == Blocks.WATER;
+            boolean stateEq = state == origState;
+            boolean isRepl = state.getBlock().isReplaceable(world, newPos.offset(side));
+
+            boolean validExchange = !isAir && (isAirAdj || isWaterAdj) && stateEq && isRepl;
+
+            //logHelper("Air - " + isAir + " | Air adj - " + isAirAdj + " | Repl - " + isRepl + " | StateEq - " + stateEq + " | valid - " + validExchange);
+
+            if (validExchange) {
+                exchangeList.add(newPos);
+                buildExchangeList(world, newPos, origin, origState, side, range, exchangeList, checkedList);
+            }
+        }
     }
 
     private static boolean blockInRange(BlockPos origin, BlockPos pos, int range) {
@@ -144,8 +205,10 @@ public class BlockExchangeHandler {
 
         List<BlockPos> toExchange = getBlocksToExchange(stack, pos, world, facing);
 
-        for (BlockPos exchangePos : toExchange) {
+        logHelper("~" + toExchange.toString() + "~");
+        logHelper("~" + toExchange.size() + "~");
 
+        for (BlockPos exchangePos : toExchange) {
             int slot = -1;
             try {
                 slot = findItemInInventory(player.inventory, Item.getItemFromBlock(newBlock), newMeta);
@@ -153,26 +216,43 @@ public class BlockExchangeHandler {
             } catch (ArrayIndexOutOfBoundsException e) {
                 player.addChatMessage(new TextComponentString("Out of " + getBlockName(newBlock, newMeta) + " in inventory"));
                 logHelper("No stacks of " + newBlock.getUnlocalizedName() + " found in inventory");
+                return false;
             }
-
 
             if (slot >= 0 && player.inventory.mainInventory[slot].stackSize > 0) {
                 Block oldBlock = world.getBlockState(exchangePos).getBlock();
                 int oldMeta = oldBlock.getMetaFromState(world.getBlockState(exchangePos));
 
-                if(placeBlockInInventory(world, player, oldBlock, oldMeta, 1) &&  placeBlockInWorld(world, exchangePos, newBlock, newState)
-                    && consumeBlockInInventory(player, newBlock, newState)) {
-                    return true;
+                if (!placeBlockInInventory(world, player, oldBlock, oldMeta, 1)) {
+                    player.addChatMessage(new TextComponentString("Out of space in inventory"));
+                    return false;
+                } else {
+                    if (!placeBlockInWorld(world, exchangePos, newBlock, newState)) {
+                        player.addChatMessage(new TextComponentString("Out of " + getBlockName(newBlock, newMeta) + " in inventory"));
+                        return false;
+                    } else {
+                        if (!consumeBlockInInventory(player, newBlock, newState)) {
+                            return false;
+                        } else {
+                            logHelper("Damage Item");
+                            stack.damageItem(1, player);
+                        }
+                    }
                 }
             }
         }
-        return false;
+
+        return true;
     }
 
     private static boolean placeBlockInInventory(World world, EntityPlayer player, Block block, int meta, int cnt) {
         ItemStack oldStack = new ItemStack(block, cnt, meta);
-        logHelper("Added " + oldStack.stackSize + " of " + oldStack.getUnlocalizedName() + " to Inventory");
-        player.inventory.addItemStackToInventory(oldStack);
+        boolean successPlaceInInventory = player.inventory.addItemStackToInventory(oldStack);
+        if (!successPlaceInInventory) {
+            return false;
+        }
+
+        logHelper("Added " + cnt + " of " + oldStack.getUnlocalizedName() + " to Inventory");
         return true;
     }
 
@@ -185,7 +265,6 @@ public class BlockExchangeHandler {
             int slot = findItemInInventory(inv, item, meta);
 
             if (slot < 0) {
-                player.addChatMessage(new TextComponentString("Out of " + getBlockName(block, meta) + " in inventory"));
                 return false;
             } else {
                 if (--inv.mainInventory[slot].stackSize <= 0){
@@ -211,7 +290,10 @@ public class BlockExchangeHandler {
     private static boolean placeBlockInWorld(World world, BlockPos exchangePos, Block block, IBlockState state) {
         logHelper("Exchanging " + world.getBlockState(exchangePos).toString() + " at " + exchangePos + " with " + state.toString());
         world.destroyBlock(exchangePos, false);
+
         world.setBlockState(exchangePos, state);
+        world.playEvent(2001, exchangePos, Block.getStateId(state));
+        world.notifyBlockOfStateChange(exchangePos, block);
 
         return true;
     }

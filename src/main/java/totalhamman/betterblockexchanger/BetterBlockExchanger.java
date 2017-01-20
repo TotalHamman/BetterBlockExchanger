@@ -16,7 +16,7 @@ import totalhamman.betterblockexchanger.proxy.CommonProxy;
 public class BetterBlockExchanger {
 
     public static final Logger log = LogManager.getLogger(Reference.MOD_ID);
-    public static final boolean debugOn = true;
+    public static final boolean debugOn = false;
 
     @Mod.Instance(Reference.MOD_ID)
     public static BetterBlockExchanger instance;
