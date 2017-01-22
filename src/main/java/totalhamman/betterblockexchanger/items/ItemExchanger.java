@@ -2,8 +2,13 @@ package totalhamman.betterblockexchanger.items;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockPurpurSlab;
+import net.minecraft.block.BlockSlab;
+import net.minecraft.block.BlockStoneSlab;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumActionResult;
@@ -72,7 +77,8 @@ public class ItemExchanger extends ItemMod {
             tooltip.add(ChatFormatting.RED + "No Selected Block");
         } else {
             String name = compound.getString("BlockName");
-            Block block = (Block) Block.getBlockFromName(name);
+            Block block = Block.getBlockFromName(name);
+
             int meta = compound.getByte("BlockData");
 
             tooltip.add(ChatFormatting.LIGHT_PURPLE + "Selected Block: " + BlockExchangeHandler.getBlockName(block, meta));

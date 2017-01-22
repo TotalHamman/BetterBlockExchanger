@@ -40,7 +40,8 @@ public class BlockExchangeHandler {
     public static void initSpecialBlockLists() {
         for (Object o : Block.REGISTRY) {
             Block block = (Block) o;
-            if (block instanceof BlockFence || block instanceof BlockFenceGate || block instanceof BlockTorch || block instanceof BlockDoor) {
+            if (block instanceof BlockFence || block instanceof BlockFenceGate || block instanceof BlockTrapDoor || block instanceof BlockDoor || block instanceof BlockPistonBase
+                    || block instanceof BlockLadder) {
                 specialBlocks.add(block);
             }
         }
@@ -106,7 +107,7 @@ public class BlockExchangeHandler {
         if (blacklistedBlocks.contains(world.getBlockState(pos).getBlock())) return false;
         if (softBlocks.contains(world.getBlockState(pos).getBlock())) return false;
         if (specialBlocks.contains((world.getBlockState(pos).getBlock()))) return false;
-        if (creativeBlocks.contains(world.getBlockState(pos).getBlock())) return false;
+        if (creativeBlocks.contains(world.getBlockState(pos).getBlock()) && !player.capabilities.isCreativeMode) return false;
 
         return true;
     }
@@ -114,6 +115,7 @@ public class BlockExchangeHandler {
     public static boolean blockSuitableForExchange(ItemStack stack, EntityPlayer player, World world, BlockPos pos) {
         Block newBlock = Block.REGISTRY.getObject(new ResourceLocation(ItemNBTHelper.getString(stack, "BlockName", "")));
         int newMeta = ItemNBTHelper.getByte(stack, "BlockData", (byte) 0);
+
         IBlockState newState = newBlock.getStateFromMeta(newMeta);
 
         Block worldBlock = world.getBlockState(pos).getBlock();
@@ -210,32 +212,36 @@ public class BlockExchangeHandler {
 
         for (BlockPos exchangePos : toExchange) {
             int slot = -1;
-            try {
-                slot = findItemInInventory(player.inventory, Item.getItemFromBlock(newBlock), newMeta);
-                logHelper("Found " + player.inventory.mainInventory[slot].stackSize + " of " + newBlock.getUnlocalizedName() + " in slot " + slot);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                player.addChatMessage(new TextComponentString("Out of " + getBlockName(newBlock, newMeta) + " in inventory"));
-                logHelper("No stacks of " + newBlock.getUnlocalizedName() + " found in inventory");
-                return false;
-            }
-
-            if (slot >= 0 && player.inventory.mainInventory[slot].stackSize > 0) {
-                Block oldBlock = world.getBlockState(exchangePos).getBlock();
-                int oldMeta = oldBlock.getMetaFromState(world.getBlockState(exchangePos));
-
-                if (!placeBlockInInventory(world, player, oldBlock, oldMeta, 1)) {
-                    player.addChatMessage(new TextComponentString("Out of space in inventory"));
+            if (player.capabilities.isCreativeMode) {
+                placeBlockInWorld(world, exchangePos, newBlock, newState);
+            } else {
+                try {
+                    slot = findItemInInventory(player.inventory, Item.getItemFromBlock(newBlock), newMeta);
+                    logHelper("Found " + player.inventory.mainInventory[slot].stackSize + " of " + newBlock.getUnlocalizedName() + " in slot " + slot);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    player.addChatMessage(new TextComponentString("Out of " + getBlockName(newBlock, newMeta) + " in inventory"));
+                    logHelper("No stacks of " + newBlock.getUnlocalizedName() + " found in inventory");
                     return false;
-                } else {
-                    if (!placeBlockInWorld(world, exchangePos, newBlock, newState)) {
-                        player.addChatMessage(new TextComponentString("Out of " + getBlockName(newBlock, newMeta) + " in inventory"));
+                }
+
+                if (slot >= 0 && player.inventory.mainInventory[slot].stackSize > 0) {
+                    Block oldBlock = world.getBlockState(exchangePos).getBlock();
+                    int oldMeta = oldBlock.getMetaFromState(world.getBlockState(exchangePos));
+
+                    if (!placeBlockInInventory(world, player, oldBlock, oldMeta, 1)) {
+                        player.addChatMessage(new TextComponentString("Out of space in inventory"));
                         return false;
                     } else {
-                        if (!consumeBlockInInventory(player, newBlock, newState)) {
+                        if (!placeBlockInWorld(world, exchangePos, newBlock, newState)) {
+                            player.addChatMessage(new TextComponentString("Out of " + getBlockName(newBlock, newMeta) + " in inventory"));
                             return false;
                         } else {
-                            logHelper("Damage Item");
-                            stack.damageItem(1, player);
+                            if (!consumeBlockInInventory(player, newBlock, newState)) {
+                                return false;
+                            } else {
+                                logHelper("Damage Item");
+                                stack.damageItem(1, player);
+                            }
                         }
                     }
                 }
