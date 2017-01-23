@@ -4,7 +4,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
 import totalhamman.betterblockexchanger.network.PacketHandler;
 import totalhamman.betterblockexchanger.network.PacketToggleMode;
-import totalhamman.betterblockexchanger.utils.KeyBindings;
+import totalhamman.betterblockexchanger.client.KeyBindings;
 
 public class KeyBindingsHandler {
     @SubscribeEvent

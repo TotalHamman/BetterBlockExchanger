@@ -14,14 +14,15 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.fluids.BlockFluidBase;
-import totalhamman.betterblockexchanger.utils.ItemNBTHelper;
+import totalhamman.betterblockexchanger.helpers.NBTHelper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static totalhamman.betterblockexchanger.utils.LogHelper.logHelper;
+import static totalhamman.betterblockexchanger.helpers.FacingHelper.getFacings;
+import static totalhamman.betterblockexchanger.helpers.LogHelper.logHelper;
 
 public class BlockExchangeHandler {
 
@@ -29,13 +30,6 @@ public class BlockExchangeHandler {
     private static final Set<Block> specialBlocks = new HashSet<Block>();
     private static final Set<Block> blacklistedBlocks = new HashSet<Block>();
     private static final Set<Block> creativeBlocks = new HashSet<Block>();
-
-    /*** Facings for the 4 faces around X Axis */
-    private static EnumFacing[] FACES_AROUND_X = new EnumFacing[1];
-    /*** Facings for the 4 faces around Y Axis */
-    private static EnumFacing[] FACES_AROUND_Y = new EnumFacing[1];
-    /*** Facings for the 4 faces around Z Axis */
-    private static EnumFacing[] FACES_AROUND_Z = new EnumFacing[1];
 
     public static void initSpecialBlockLists() {
         for (Object o : Block.REGISTRY) {
@@ -79,29 +73,7 @@ public class BlockExchangeHandler {
         logHelper("End Special Blocklists Init");
     }
 
-    public static void initFacings() {
-        List<EnumFacing> x = new ArrayList<EnumFacing>();
-        List<EnumFacing> y = new ArrayList<EnumFacing>();
-        List<EnumFacing> z = new ArrayList<EnumFacing>();
-
-        for (EnumFacing facing : EnumFacing.VALUES){
-            if (facing.getAxis() != EnumFacing.Axis.X){
-                x.add(facing);
-            }
-            if (facing.getAxis() != EnumFacing.Axis.Y){
-                y.add(facing);
-            }
-            if (facing.getAxis() != EnumFacing.Axis.Z){
-                z.add(facing);
-            }
-        }
-
-        FACES_AROUND_X = x.toArray(new EnumFacing[1]);
-        FACES_AROUND_Y = y.toArray(new EnumFacing[1]);
-        FACES_AROUND_Z = z.toArray(new EnumFacing[1]);
-    }
-
-    public static boolean blockSuitableForSelection(ItemStack stack, EntityPlayer player, World world, BlockPos pos) {
+    public static boolean blockSuitableForSelection(EntityPlayer player, World world, BlockPos pos) {
         if (world.getTileEntity(pos) != null) return false;
         if (world.isAirBlock(pos)) return false;
         if (blacklistedBlocks.contains(world.getBlockState(pos).getBlock())) return false;
@@ -113,15 +85,13 @@ public class BlockExchangeHandler {
     }
 
     public static boolean blockSuitableForExchange(ItemStack stack, EntityPlayer player, World world, BlockPos pos) {
-        Block newBlock = Block.REGISTRY.getObject(new ResourceLocation(ItemNBTHelper.getString(stack, "BlockName", "")));
-        int newMeta = ItemNBTHelper.getByte(stack, "BlockData", (byte) 0);
-
-        IBlockState newState = newBlock.getStateFromMeta(newMeta);
+        Block newBlock = Block.REGISTRY.getObject(new ResourceLocation(NBTHelper.getString(stack, "BlockName", "")));
+        int newMeta = NBTHelper.getInteger(stack, "BlockData", (byte) 0);
 
         Block worldBlock = world.getBlockState(pos).getBlock();
         int worldMeta = worldBlock.getMetaFromState(world.getBlockState(pos));
 
-        if (!blockSuitableForSelection(stack, player, world, pos)) {
+        if (!blockSuitableForSelection(player, world, pos)) {
             player.addChatMessage(new TextComponentString("Invalid Block - " + getBlockName(worldBlock, worldMeta)));
             return false;
         }
@@ -136,7 +106,7 @@ public class BlockExchangeHandler {
     }
 
     public static List<BlockPos> getBlocksToExchange(ItemStack stack, BlockPos pos, World world, EnumFacing side) {
-        int range = ItemNBTHelper.getCompound(stack).getInteger("SQMode");
+        int range = NBTHelper.getInteger(stack, "SQMode", (byte) 0);
         IBlockState state = world.getBlockState(pos);
 
         List<BlockPos> exchangeList = new ArrayList<BlockPos>();
@@ -151,15 +121,7 @@ public class BlockExchangeHandler {
     }
 
     private static void buildExchangeList(World world, BlockPos pos, BlockPos origin, IBlockState origState, EnumFacing side, int range, List<BlockPos> exchangeList, List<BlockPos> checkedList) {
-        EnumFacing[] facesAround = new EnumFacing[1];
-
-        if (side.getAxis() == EnumFacing.Axis.X) {
-            facesAround = FACES_AROUND_X;
-        } else if (side.getAxis() == EnumFacing.Axis.Y) {
-            facesAround = FACES_AROUND_Y;
-        } else {
-            facesAround = FACES_AROUND_Z;
-        }
+        EnumFacing[] facesAround = getFacings(side);
 
         for (EnumFacing dir : facesAround){
             BlockPos newPos = pos.offset(dir);
@@ -171,15 +133,8 @@ public class BlockExchangeHandler {
             checkedList.add(newPos);
             IBlockState state = world.getBlockState(newPos);
 
-            boolean isAir = world.isAirBlock(newPos);
-            boolean isAirAdj = world.isAirBlock(newPos.offset(side));
-            boolean isWaterAdj = world.getBlockState(newPos.offset(side)) == Blocks.WATER;
-            boolean stateEq = state == origState;
-            boolean isRepl = state.getBlock().isReplaceable(world, newPos.offset(side));
-
-            boolean validExchange = !isAir && (isAirAdj || isWaterAdj) && stateEq && isRepl;
-
-            //logHelper("Air - " + isAir + " | Air adj - " + isAirAdj + " | Repl - " + isRepl + " | StateEq - " + stateEq + " | valid - " + validExchange);
+            boolean validExchange = !world.isAirBlock(newPos) && (world.isAirBlock(newPos.offset(side)) || (world.getBlockState(newPos.offset(side)) == Blocks.WATER))
+                && state == origState && state.getBlock().isReplaceable(world, newPos.offset(side));
 
             if (validExchange) {
                 exchangeList.add(newPos);
@@ -193,16 +148,18 @@ public class BlockExchangeHandler {
         return Math.abs(diff.getX()) <= range && Math.abs(diff.getY()) <= range && Math.abs(diff.getZ()) <= range;
     }
 
-    public static void setSelectedBlock(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumFacing facing) {
-        ItemNBTHelper.setString(stack, "BlockName", Block.REGISTRY.getNameForObject(world.getBlockState(pos).getBlock()).toString());
-        ItemNBTHelper.setByte(stack, "BlockData", (byte) world.getBlockState(pos).getBlock().getMetaFromState(world.getBlockState(pos)));
+    public static void setSelectedBlock(ItemStack stack, Block block, IBlockState state) {
+        String blockName = Block.REGISTRY.getNameForObject(block).toString();
 
-        logHelper("name - " + world.getBlockState(pos).getBlock().getUnlocalizedName() + " | state - " + world.getBlockState(pos).toString());
+        NBTHelper.setString(stack, "BlockName", blockName);
+        NBTHelper.setInteger(stack, "BlockData", (byte) block.getMetaFromState(state));
+
+        logHelper("name - " + blockName + " | state - " + state);
     }
 
     public static boolean exchangeBlocks(ItemStack stack, EntityPlayer player, World world, BlockPos pos, EnumFacing facing) {
-        Block newBlock = Block.REGISTRY.getObject(new ResourceLocation(ItemNBTHelper.getString(stack, "BlockName", "")));
-        int newMeta = ItemNBTHelper.getByte(stack, "BlockData", (byte) 0);
+        Block newBlock = Block.REGISTRY.getObject(new ResourceLocation(NBTHelper.getString(stack, "BlockName", "")));
+        int newMeta = NBTHelper.getInteger(stack, "BlockData", (byte) 0);
         IBlockState newState = newBlock.getStateFromMeta(newMeta);
 
         List<BlockPos> toExchange = getBlocksToExchange(stack, pos, world, facing);
@@ -228,7 +185,7 @@ public class BlockExchangeHandler {
                     Block oldBlock = world.getBlockState(exchangePos).getBlock();
                     int oldMeta = oldBlock.getMetaFromState(world.getBlockState(exchangePos));
 
-                    if (!placeBlockInInventory(world, player, oldBlock, oldMeta, 1)) {
+                    if (!placeBlockInInventory(player, oldBlock, oldMeta)) {
                         player.addChatMessage(new TextComponentString("Out of space in inventory"));
                         return false;
                     } else {
@@ -251,14 +208,14 @@ public class BlockExchangeHandler {
         return true;
     }
 
-    private static boolean placeBlockInInventory(World world, EntityPlayer player, Block block, int meta, int cnt) {
-        ItemStack oldStack = new ItemStack(block, cnt, meta);
+    private static boolean placeBlockInInventory(EntityPlayer player, Block block, int meta) {
+        ItemStack oldStack = new ItemStack(block, 1, meta);
         boolean successPlaceInInventory = player.inventory.addItemStackToInventory(oldStack);
         if (!successPlaceInInventory) {
             return false;
         }
 
-        logHelper("Added " + cnt + " of " + oldStack.getUnlocalizedName() + " to Inventory");
+        logHelper("Added " + 1 + " of " + oldStack.getUnlocalizedName() + " to Inventory");
         return true;
     }
 
@@ -295,8 +252,8 @@ public class BlockExchangeHandler {
 
     private static boolean placeBlockInWorld(World world, BlockPos exchangePos, Block block, IBlockState state) {
         logHelper("Exchanging " + world.getBlockState(exchangePos).toString() + " at " + exchangePos + " with " + state.toString());
-        world.destroyBlock(exchangePos, false);
 
+        world.destroyBlock(exchangePos, false);
         world.setBlockState(exchangePos, state);
         world.playEvent(2001, exchangePos, Block.getStateId(state));
         world.notifyBlockOfStateChange(exchangePos, block);

@@ -30,7 +30,7 @@ configFile.withReader {
 }
 
 version = "${config.mcversion}-${config.mod_version}"
-group= "totalhamman.betterblockexchanger" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = "totalhamman.betterblockexchanger" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "betterblockexchanger"
 
 sourceCompatibility = targetCompatibility = "1.7" // Need this here so eclipse task generates correctly.
@@ -42,8 +42,8 @@ minecraft {
     version = config.mcversion + "-" + config.forge_version
     runDir = "run"
     mappings = "${config.mcp_mappings}"
-    replace '${mod_version}', project.config.mod_version
-    replaceIn "utils/Reference.java"
+    replace '$mod_version', project.config.mod_version
+    replaceIn "library/Reference.java"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 

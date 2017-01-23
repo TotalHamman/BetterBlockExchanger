@@ -21,7 +21,6 @@ public class ClientProxy extends CommonProxy {
         super.init(e);
 
         if (debugOn) BetterBlockExchanger.log.info("Init Models");
-
         ItemMod.initModel(Exchanger);
         ItemMod.initModel(BedrockChisel);
         ItemMod.initModel(BedrockShard);

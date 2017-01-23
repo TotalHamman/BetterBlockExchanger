@@ -33,7 +33,7 @@ public class RenderOverlayHandler {
 
         RayTraceResult mouseOver = mc.objectMouseOver;
 
-        if (stack != null && stack.getItem() instanceof ItemExchanger && mouseOver != null && mouseOver.getBlockPos() != null && mouseOver.sideHit != null) {
+        if (stack != null && stack.getItem() instanceof ItemExchanger && mouseOver != null && mouseOver.getBlockPos() != null && mouseOver.sideHit != null && stack.getTagCompound() != null) {
             List<BlockPos> blocks = BlockExchangeHandler.getBlocksToExchange(stack, mouseOver.getBlockPos(), world, mc.objectMouseOver.sideHit);
 
             Tessellator tessellator = Tessellator.getInstance();

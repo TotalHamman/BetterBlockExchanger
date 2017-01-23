@@ -10,9 +10,8 @@ public class ItemBedrockShard extends ItemMod {
 		super();
 		this.setMaxStackSize(64);
         this.setUnlocalizedName("bedrock_shard");
-        this.setCreativeTab(BetterBlockExchanger.TabBetterBlockExchanger);
-		this.setRegistryName(this.getUnlocalizedName().substring(5));
+		this.setRegistryName("bedrock_shard");
+		this.setCreativeTab(BetterBlockExchanger.TabBetterBlockExchanger);
 		GameRegistry.register(this);
 	}
-
 }

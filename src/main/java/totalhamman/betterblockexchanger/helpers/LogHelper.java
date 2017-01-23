@@ -1,4 +1,4 @@
-package totalhamman.betterblockexchanger.utils;
+package totalhamman.betterblockexchanger.helpers;
 
 import totalhamman.betterblockexchanger.BetterBlockExchanger;
 

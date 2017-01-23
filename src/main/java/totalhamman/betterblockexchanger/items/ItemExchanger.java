@@ -2,13 +2,8 @@ package totalhamman.betterblockexchanger.items;
 
 import com.mojang.realmsclient.gui.ChatFormatting;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockPurpurSlab;
-import net.minecraft.block.BlockSlab;
-import net.minecraft.block.BlockStoneSlab;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumActionResult;
@@ -20,11 +15,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import totalhamman.betterblockexchanger.BetterBlockExchanger;
 import totalhamman.betterblockexchanger.handlers.BlockExchangeHandler;
-import totalhamman.betterblockexchanger.utils.ItemNBTHelper;
+import totalhamman.betterblockexchanger.helpers.NBTHelper;
 
 import java.util.List;
 
-import static totalhamman.betterblockexchanger.utils.LogHelper.logHelper;
+import static totalhamman.betterblockexchanger.helpers.LogHelper.logHelper;
 
 public class ItemExchanger extends ItemMod {
 
@@ -33,7 +28,6 @@ public class ItemExchanger extends ItemMod {
     public static final int SQMODE_3X3 = 1;
     public static final int SQMODE_5X5 = 2;
     public static final int SQMODE_7X7 = 3;
-    public static final int SQMODE_FINAL = SQMODE_INITIAL;
 
     public static final String[] sqModeList = new String[] {"1x1", "3x3", "5x5", "7x7"};
 
@@ -41,31 +35,25 @@ public class ItemExchanger extends ItemMod {
     public ItemExchanger() {
         super();
         this.setMaxStackSize(1);
-        this.setUnlocalizedName("exchanger");
-        this.setCreativeTab(BetterBlockExchanger.TabBetterBlockExchanger);
         this.setMaxDamage(1728);
         this.setNoRepair();
-        this.setRegistryName(this.getUnlocalizedName().substring(5));
+        this.setUnlocalizedName("exchanger");
+        this.setRegistryName("exchanger");
+        this.setCreativeTab(BetterBlockExchanger.TabBetterBlockExchanger);
         GameRegistry.register(this);
     }
 
     public void switchMode(EntityPlayer player, ItemStack stack) {
         int sqMode = getSQMode(stack);
-
-        logHelper("Original SQMode Value - " + sqMode);
-
         sqMode++;
+
         if (sqMode > SQMODE_7X7) sqMode = SQMODE_INITIAL;
-
-        logHelper("Original SQMode Value - " + sqMode);
-
-        player.addChatMessage(new TextComponentString("Mode set to " + sqModeList[sqMode]));
-        ItemNBTHelper.getCompound(stack).setInteger("SQMode", sqMode);
+        player.addChatMessage(new TextComponentString("Exchanger mode set to " + sqModeList[sqMode]));
+        NBTHelper.setInteger(stack, "SQMode", sqMode);
     }
 
     private int getSQMode(ItemStack stack) {
-        return ItemNBTHelper.getCompound(stack).getInteger("SQMode");
-        //return ItemNBTHelper.getInteger(stack, "SqMode", 0);
+        return NBTHelper.getInteger(stack, "SQMode", (byte) 0);
     }
 
     @Override
@@ -73,7 +61,7 @@ public class ItemExchanger extends ItemMod {
         super.addInformation(stack, player, tooltip, bool);
 
         NBTTagCompound compound = stack.getTagCompound();
-        if (compound == null) {
+        if (compound == null || Block.getBlockFromName(compound.getString("BlockName")) == null) {
             tooltip.add(ChatFormatting.RED + "No Selected Block");
         } else {
             String name = compound.getString("BlockName");

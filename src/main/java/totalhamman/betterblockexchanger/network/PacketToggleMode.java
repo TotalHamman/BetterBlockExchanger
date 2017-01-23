@@ -8,7 +8,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import totalhamman.betterblockexchanger.items.ItemExchanger;
 
-import static totalhamman.betterblockexchanger.utils.LogHelper.logHelper;
+import static totalhamman.betterblockexchanger.helpers.LogHelper.logHelper;
 
 public class PacketToggleMode implements IMessage, IMessageHandler<PacketToggleMode, IMessage> {
 

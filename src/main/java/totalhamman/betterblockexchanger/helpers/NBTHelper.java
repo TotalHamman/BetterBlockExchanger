@@ -1,9 +1,9 @@
-package totalhamman.betterblockexchanger.utils;
+package totalhamman.betterblockexchanger.helpers;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
-public class ItemNBTHelper {
+public class NBTHelper {
 
     // SETTERS ///////////////////////////////////////////////////////////////////
     public static NBTTagCompound getCompound(ItemStack stack) {

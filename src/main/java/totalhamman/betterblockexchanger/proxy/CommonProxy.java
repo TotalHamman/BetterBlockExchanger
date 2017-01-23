@@ -1,6 +1,5 @@
 package totalhamman.betterblockexchanger.proxy;
 
-import net.minecraft.block.Block;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -10,9 +9,10 @@ import totalhamman.betterblockexchanger.handlers.BlockExchangeHandler;
 import totalhamman.betterblockexchanger.handlers.CraftingRecipeHandler;
 import totalhamman.betterblockexchanger.handlers.KeyBindingsHandler;
 import totalhamman.betterblockexchanger.handlers.RenderOverlayHandler;
+import totalhamman.betterblockexchanger.helpers.FacingHelper;
 import totalhamman.betterblockexchanger.items.ModItems;
 import totalhamman.betterblockexchanger.network.PacketHandler;
-import totalhamman.betterblockexchanger.utils.KeyBindings;
+import totalhamman.betterblockexchanger.client.KeyBindings;
 
 import static totalhamman.betterblockexchanger.BetterBlockExchanger.debugOn;
 
@@ -40,6 +40,8 @@ public class CommonProxy {
     public void postInit(FMLPostInitializationEvent e) {
         if (debugOn) BetterBlockExchanger.log.info("Init Special Blocklists");
         BlockExchangeHandler.initSpecialBlockLists();
-        BlockExchangeHandler.initFacings();
+
+        if (debugOn) BetterBlockExchanger.log.info("Init EnumFacings");
+        FacingHelper.initFacings();
     }
 }

@@ -1,4 +1,4 @@
-package totalhamman.betterblockexchanger.utils;
+package totalhamman.betterblockexchanger.client;
 
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
