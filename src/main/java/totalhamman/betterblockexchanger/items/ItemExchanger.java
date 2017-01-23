@@ -97,17 +97,17 @@ public class ItemExchanger extends ItemMod {
 
         logHelper("-------------------------------------------------------------------");
 
-        IBlockState prevState = world.getBlockState(pos);
-        Block block = prevState.getBlock();
-        int meta = block.getMetaFromState(prevState);
+        IBlockState state = world.getBlockState(pos);
+        Block block = state.getBlock();
+        int meta = block.getMetaFromState(state);
 
         if (player.isSneaking()) {
 
-            if (BlockExchangeHandler.blockSuitableForSelection(stack, player, world, pos)) {
+            if (BlockExchangeHandler.blockSuitableForSelection(player, world, pos)) {
                 logHelper("Sneaking | Block Selected - " + BlockExchangeHandler.getBlockName(block, meta));
 
                 player.addChatMessage(new TextComponentString("Selected Block - " + BlockExchangeHandler.getBlockName(block, meta)));
-                BlockExchangeHandler.setSelectedBlock(stack, player, world, pos, facing);
+                BlockExchangeHandler.setSelectedBlock(stack, block, state);
                 return EnumActionResult.SUCCESS;
             } else {
                 player.addChatMessage(new TextComponentString("Invalid Selected Block - " + BlockExchangeHandler.getBlockName(block, meta)));
