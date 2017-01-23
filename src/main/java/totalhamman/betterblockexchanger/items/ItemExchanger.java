@@ -61,7 +61,7 @@ public class ItemExchanger extends ItemMod {
         super.addInformation(stack, player, tooltip, bool);
 
         NBTTagCompound compound = stack.getTagCompound();
-        if (compound == null || Block.getBlockFromName(compound.getString("BlockName")) == null) {
+        if (compound == null) {
             tooltip.add(ChatFormatting.RED + "No Selected Block");
         } else {
             String name = compound.getString("BlockName");
@@ -85,17 +85,17 @@ public class ItemExchanger extends ItemMod {
 
         logHelper("-------------------------------------------------------------------");
 
-        IBlockState state = world.getBlockState(pos);
-        Block block = state.getBlock();
-        int meta = block.getMetaFromState(state);
+        IBlockState prevState = world.getBlockState(pos);
+        Block block = prevState.getBlock();
+        int meta = block.getMetaFromState(prevState);
 
         if (player.isSneaking()) {
 
-            if (BlockExchangeHandler.blockSuitableForSelection(player, world, pos)) {
+            if (BlockExchangeHandler.blockSuitableForSelection(stack, player, world, pos)) {
                 logHelper("Sneaking | Block Selected - " + BlockExchangeHandler.getBlockName(block, meta));
 
                 player.addChatMessage(new TextComponentString("Selected Block - " + BlockExchangeHandler.getBlockName(block, meta)));
-                BlockExchangeHandler.setSelectedBlock(stack, block, state);
+                BlockExchangeHandler.setSelectedBlock(stack, player, world, pos, facing);
                 return EnumActionResult.SUCCESS;
             } else {
                 player.addChatMessage(new TextComponentString("Invalid Selected Block - " + BlockExchangeHandler.getBlockName(block, meta)));
