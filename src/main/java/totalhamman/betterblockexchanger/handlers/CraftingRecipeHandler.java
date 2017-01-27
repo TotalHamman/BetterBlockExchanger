@@ -14,14 +14,14 @@ public class CraftingRecipeHandler {
     public static void init() {
 
         addShapedRecipe(new ItemStack(ModItems.Exchanger),
-                "  E", " S ", "R  ",
+                "E  ", " S ", "  R",
                 'E', new ItemStack(Items.ENDER_EYE),
                 'S', new ItemStack(ModItems.BedrockShard),
                 'R', new ItemStack(Items.REDSTONE));
 
         addShapedRecipe(new ItemStack(ModItems.BedrockChisel),
-                " G ", "O  ", "   ",
-                'G', new ItemStack(Items.DIAMOND),
+                "D  ", " O ", "  O",
+                'D', new ItemStack(Items.DIAMOND),
                 'O', new ItemStack(Item.getItemFromBlock(Blocks.OBSIDIAN)));
 
     }
