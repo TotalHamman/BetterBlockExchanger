@@ -1,5 +1,6 @@
 package totalhamman.betterblockexchanger.handlers;
 
+import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.GlStateManager;
@@ -33,7 +34,8 @@ public class RenderOverlayHandler {
 
         RayTraceResult mouseOver = mc.objectMouseOver;
 
-        if (stack != null && stack.getItem() instanceof ItemExchanger && mouseOver != null && mouseOver.getBlockPos() != null && mouseOver.sideHit != null && stack.getTagCompound() != null) {
+        if (stack != null && stack.getItem() instanceof ItemExchanger  && stack.getTagCompound() != null
+                && mouseOver != null && mouseOver.getBlockPos() != null && mouseOver.sideHit != null) {
             List<BlockPos> blocks = BlockExchangeHandler.getBlocksToExchange(stack, mouseOver.getBlockPos(), world, mc.objectMouseOver.sideHit);
 
             Tessellator tessellator = Tessellator.getInstance();
@@ -46,7 +48,7 @@ public class RenderOverlayHandler {
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
             GlStateManager.color(1F, 1F, 1F, 1F);
-            GlStateManager.glLineWidth(2.0F);
+            GlStateManager.glLineWidth(3.0F);
             GlStateManager.disableTexture2D();
 
             for (BlockPos block : blocks) {
@@ -59,35 +61,57 @@ public class RenderOverlayHandler {
                 double renderZ = block.getZ() - offsetZ;
 
                 AxisAlignedBB boundingBox = new AxisAlignedBB(renderX, renderY, renderZ, renderX + 1, renderY + 1, renderZ + 1).expand(0.001, 0.001, 0.001);
-                float colour = 1F;
+
+                float colourR = 1F;
+                float colourG = 1F;
+                float colourB = 1F;
+                float colourA = 1F;
+
+                if (Block.getBlockFromName(stack.getTagCompound().getString("BlockName")) == null) {
+                    colourR = 1F;
+                    colourG = 0.1F;
+                    colourB = 0.1F;
+                    colourA = 1F;
+                }
+
+                if (player.isSneaking()) {
+                    colourR = 0.1F;
+                    colourG = 1F;
+                    colourB = 0.1F;
+                    colourA = 1F;
+                }
+
                 if (!world.getBlockState(block.offset(mc.objectMouseOver.sideHit)).getBlock().isReplaceable(world, block.offset(mc.objectMouseOver.sideHit))) {
                     GlStateManager.disableDepth();
-                    colour = 0.2F;
+                    colourR = 0.2F;
+                    colourG = 0.2F;
+                    colourB = 0.2F;
+                    colourA = 0.2F;
                 }
 
                 buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
-                buffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.minZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).color(colour, colour, colour, colour).endVertex();
+                buffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.minZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).color(colourR, colourG, colourB, colourA).endVertex();
                 tessellator.draw();
                 buffer.begin(3, DefaultVertexFormats.POSITION_COLOR);
-                buffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).color(colour, colour, colour, colour).endVertex();
+                buffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).color(colourR, colourG, colourB, colourA).endVertex();
                 tessellator.draw();
                 buffer.begin(1, DefaultVertexFormats.POSITION_COLOR);
-                buffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.minZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).color(colour, colour, colour, colour).endVertex();
-                buffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).color(colour, colour, colour, colour).endVertex();
+                buffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.minZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.minZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.minZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.minZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.maxX, boundingBox.minY, boundingBox.maxZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.maxX, boundingBox.maxY, boundingBox.maxZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.minX, boundingBox.minY, boundingBox.maxZ).color(colourR, colourG, colourB, colourA).endVertex();
+                buffer.pos(boundingBox.minX, boundingBox.maxY, boundingBox.maxZ).color(colourR, colourG, colourB, colourA).endVertex();
                 tessellator.draw();
 
                 if (!world.getBlockState(block.offset(mc.objectMouseOver.sideHit)).getBlock().isReplaceable(world, block.offset(mc.objectMouseOver.sideHit))) {
