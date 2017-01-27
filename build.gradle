@@ -31,7 +31,7 @@ configFile.withReader {
 
 version = "${config.mcversion}-${config.mod_version}"
 group = "totalhamman.betterblockexchanger" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "betterblockexchanger"
+archivesBaseName = "BetterBlockExchanger"
 
 sourceCompatibility = targetCompatibility = "1.7" // Need this here so eclipse task generates correctly.
 compileJava {
