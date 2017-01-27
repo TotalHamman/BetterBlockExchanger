@@ -10,15 +10,14 @@ import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import totalhamman.betterblockexchanger.BetterBlockExchanger;
 import totalhamman.betterblockexchanger.handlers.BlockExchangeHandler;
-import totalhamman.betterblockexchanger.helpers.NBTHelper;
 
 import java.util.List;
 
+import static totalhamman.betterblockexchanger.helpers.ChatHelper.msgPlayer;
 import static totalhamman.betterblockexchanger.helpers.LogHelper.logHelper;
 
 public class ItemExchanger extends ItemMod {
@@ -28,9 +27,14 @@ public class ItemExchanger extends ItemMod {
     public static final int SQMODE_3X3 = 1;
     public static final int SQMODE_5X5 = 2;
     public static final int SQMODE_7X7 = 3;
+    public static final int SQMODE_9X9 = 4;
+    public static final int SQMODE_17X17 = 5;
+    public static final int SQMODE_33X33 = 6;
+    public static final int SQMODE_49X49 = 7;
+    public static final int SQMODE_65X65 = 8;
 
-    public static final String[] sqModeList = new String[] {"1x1", "3x3", "5x5", "7x7"};
-
+    public static final String[] sqModeList = new String[] {"1x1", "3x3", "5x5", "7x7", "9x9", "17x17", "33x33", "49X49", "65x65"};
+    public static final Integer[] sqModeRange = new Integer[] {0, 1, 2, 3, 4, 8, 16, 24, 32};
 
     public ItemExchanger() {
         super();
@@ -44,23 +48,28 @@ public class ItemExchanger extends ItemMod {
     }
 
     public void switchMode(EntityPlayer player, ItemStack stack) {
-        int sqMode = getSQMode(stack);
+        if (stackTagCompoundNull(stack)) setDefaultTagCompound(stack);
+
+        int sqMode = stack.getTagCompound().getInteger("SQMode");
         sqMode++;
 
-        if (sqMode > SQMODE_7X7) sqMode = SQMODE_INITIAL;
-        player.addChatMessage(new TextComponentString("Exchanger mode set to " + sqModeList[sqMode]));
-        NBTHelper.setInteger(stack, "SQMode", sqMode);
-    }
+        if (!player.capabilities.isCreativeMode) {
+            if (sqMode > SQMODE_17X17) sqMode = SQMODE_INITIAL;
+        } else {
+            if (sqMode > SQMODE_65X65) sqMode = SQMODE_INITIAL;
+        }
 
-    private int getSQMode(ItemStack stack) {
-        return NBTHelper.getInteger(stack, "SQMode", (byte) 0);
+        stack.getTagCompound().setInteger("SQMode", sqMode);
+        msgPlayer(player, "Exchanger mode set to " + sqModeList[sqMode]);
     }
 
     @Override
     public void addInformation(ItemStack stack, EntityPlayer player, List<String> tooltip, boolean bool) {
         super.addInformation(stack, player, tooltip, bool);
 
+        if (stackTagCompoundNull(stack)) setDefaultTagCompound(stack);
         NBTTagCompound compound = stack.getTagCompound();
+
         if (compound == null || Block.getBlockFromName(compound.getString("BlockName")) == null) {
             tooltip.add(ChatFormatting.RED + "No Selected Block");
         } else {
@@ -94,11 +103,11 @@ public class ItemExchanger extends ItemMod {
             if (BlockExchangeHandler.blockSuitableForSelection(player, world, pos)) {
                 logHelper("Sneaking | Block Selected - " + BlockExchangeHandler.getBlockName(block, meta));
 
-                player.addChatMessage(new TextComponentString("Selected Block - " + BlockExchangeHandler.getBlockName(block, meta)));
+                msgPlayer(player, "Selected Block - " + BlockExchangeHandler.getBlockName(block, meta));
                 BlockExchangeHandler.setSelectedBlock(stack, block, state);
                 return EnumActionResult.SUCCESS;
             } else {
-                player.addChatMessage(new TextComponentString("Invalid Selected Block - " + BlockExchangeHandler.getBlockName(block, meta)));
+                msgPlayer(player, "Invalid Selected Block - " + BlockExchangeHandler.getBlockName(block, meta));
                 return EnumActionResult.FAIL;
             }
         } else {
@@ -106,9 +115,14 @@ public class ItemExchanger extends ItemMod {
 
             if (BlockExchangeHandler.blockSuitableForExchange(stack, player, world, pos)) {
                 logHelper("Block " + BlockExchangeHandler.getBlockName(block, meta) + " is suitable for exchange");
-                if (BlockExchangeHandler.exchangeBlocks(stack, player, world, pos, facing)) {
+
+                boolean success = BlockExchangeHandler.exchangeBlocks(stack, player, world, pos, facing);
+
+                if (success) {
                     return EnumActionResult.SUCCESS;
+
                 }
+
             } else {
                 return EnumActionResult.FAIL;
             }
@@ -116,4 +130,16 @@ public class ItemExchanger extends ItemMod {
 
         return EnumActionResult.SUCCESS;
     }
+
+    public static boolean stackTagCompoundNull(ItemStack stack) {
+        return stack.getTagCompound() == null;
+    }
+
+    public static void setDefaultTagCompound(ItemStack stack) {
+        stack.setTagCompound(new NBTTagCompound());
+        stack.getTagCompound().setString("BlockName", "");
+        stack.getTagCompound().setInteger("BlockData", 0);
+        stack.getTagCompound().setInteger("SQMode", 0);
+    }
+
 }

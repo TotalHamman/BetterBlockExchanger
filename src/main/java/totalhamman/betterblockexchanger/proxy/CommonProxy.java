@@ -5,43 +5,44 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import totalhamman.betterblockexchanger.BetterBlockExchanger;
-import totalhamman.betterblockexchanger.handlers.BlockExchangeHandler;
-import totalhamman.betterblockexchanger.handlers.CraftingRecipeHandler;
-import totalhamman.betterblockexchanger.handlers.KeyBindingsHandler;
-import totalhamman.betterblockexchanger.handlers.RenderOverlayHandler;
+import totalhamman.betterblockexchanger.handlers.*;
 import totalhamman.betterblockexchanger.helpers.FacingHelper;
 import totalhamman.betterblockexchanger.items.ModItems;
 import totalhamman.betterblockexchanger.network.PacketHandler;
 import totalhamman.betterblockexchanger.client.KeyBindings;
 
 import static totalhamman.betterblockexchanger.BetterBlockExchanger.debugOn;
+import static totalhamman.betterblockexchanger.helpers.LogHelper.logHelper;
 
 public class CommonProxy {
     public void preInit(FMLPreInitializationEvent e) {
-        if (debugOn) BetterBlockExchanger.log.info("Init Items");
+        logHelper("Init Items");
         ModItems.init();
 
-        if (debugOn) BetterBlockExchanger.log.info("Init Recipes");
+        logHelper("Init Recipes");
         CraftingRecipeHandler.init();
 
-        if (debugOn) BetterBlockExchanger.log.info("Register Packet Handler");
+        logHelper("Register Packet Handler");
         PacketHandler.registerMessages("btrblockexch");
     }
 
     public void init(FMLInitializationEvent e) {
-        if (debugOn) BetterBlockExchanger.log.info("Register / Init Key Bindings Handler");
+        logHelper("Register / Init Key Bindings Handler");
         MinecraftForge.EVENT_BUS.register(new KeyBindingsHandler());
         KeyBindings.init();
 
-        if (debugOn) BetterBlockExchanger.log.info("Register Render Handler");
+        logHelper("Register Render Handler");
         MinecraftForge.EVENT_BUS.register(new RenderOverlayHandler());
+
+        logHelper("Register World Event Handler");
+        MinecraftForge.EVENT_BUS.register(new WorldEventHandler());
     }
 
     public void postInit(FMLPostInitializationEvent e) {
-        if (debugOn) BetterBlockExchanger.log.info("Init Special Blocklists");
+        logHelper("Init Special Blocklists");
         BlockExchangeHandler.initSpecialBlockLists();
 
-        if (debugOn) BetterBlockExchanger.log.info("Init EnumFacings");
+        logHelper("Init EnumFacings");
         FacingHelper.initFacings();
     }
 }
